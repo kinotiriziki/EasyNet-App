@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "433630666208",
+    "project_id": "easynet-app",
+    "storage_bucket": "easynet-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:433630666208:android:fe7a0d951b90a820b9df85",
+        "android_client_info": {
+          "package_name": "com.example.easynetapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeXE-gARXcpV9dkZQlaQUXSrOfiVlVcNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
