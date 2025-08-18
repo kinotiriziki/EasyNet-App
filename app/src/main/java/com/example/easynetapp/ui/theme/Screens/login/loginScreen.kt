@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,13 +27,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.easynetapp.R
+import com.example.easynetapp.data.AuthViewModel
+import com.example.easynetapp.navigation.Route_REGISTER
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
 
     Box(){
         Image(painter = painterResource(id = R.drawable.design),
@@ -52,11 +57,17 @@ fun LoginScreen(navController: NavController) {
             style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(24.dp))
-        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Image logo",
+        Card (shape = CircleShape,
+            modifier = Modifier
+                .padding(10.dp)
+                .size(75.dp))
+        { Image(painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Image logo",
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp),
-            contentScale = ContentScale.Fit)
+            contentScale = ContentScale.Fit) }
+
 
         OutlinedTextField(
             value = email,
@@ -86,16 +97,21 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-            },
-            colors = ButtonDefaults.buttonColors(Color.Black),
-            modifier = Modifier.fillMaxWidth()
-            )
-        {Text(text = "Login",
-            color = Color.Cyan,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp) }
+        Button(onClick = {
+            authViewModel.login(email, password) { success, errorMsg ->
+                if (success) {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                } else {
+                    error = errorMsg ?: "Login failed"
+                }
+            }
+        }) {
+            Text("Login")
+        }
+
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -103,7 +119,7 @@ fun LoginScreen(navController: NavController) {
             color = Color.Black,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
-            modifier = Modifier.clickable {  }
+            modifier = Modifier.clickable {navController.navigate(Route_REGISTER)  }
         )
 
         if (loading) {
@@ -118,9 +134,4 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginScreenPreview(){
-    LoginScreen(rememberNavController())
-}
 

@@ -1,10 +1,12 @@
 package com.example.easynetapp.ui.theme.Screens.register
 
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,17 +30,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.easynetapp.R
-
+import com.example.easynetapp.data.AuthViewModel
+import com.example.easynetapp.navigation.Route_LOGIN
 
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController,authViewModel: AuthViewModel) {
     var fullname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
 
     Box(){
@@ -57,11 +62,17 @@ fun RegisterScreen(navController: NavController) {
         Text("EasyNet Registration",
             style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
-        Image(painter = painterResource(id = R.drawable.logo), contentDescription = "Image logo",
+        Card(shape = CircleShape,
+            modifier = Modifier
+                .padding(10.dp)
+                .size(100.dp))
+        {Image(painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Image logo",
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp),
-            contentScale = ContentScale.Fit)
+            contentScale = ContentScale.Fit)  }
+
 
         OutlinedTextField(
             value = fullname,
@@ -109,17 +120,20 @@ fun RegisterScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
+        Button(onClick = {
+            authViewModel.register(email, password) { success, errorMsg ->
+                if (success) {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                } else {
+                    Toast.makeText(context, errorMsg ?: "Registration failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }) {
+            Text("Register")
+        }
 
-            },
-            colors = ButtonDefaults.buttonColors(Color.Black),
-            modifier = Modifier.fillMaxWidth()
-        )
-        {Text(text = "Register",
-            color = Color.Cyan,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp) }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -127,7 +141,7 @@ fun RegisterScreen(navController: NavController) {
             color = Color.Black,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
-            modifier = Modifier.clickable {  }
+            modifier = Modifier.clickable {navController.navigate(Route_LOGIN)  }
         )
 
         if (loading) {
@@ -142,8 +156,3 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun RegisterScreenPreview(){
-    RegisterScreen(rememberNavController())
-}
