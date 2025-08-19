@@ -1,6 +1,7 @@
 package com.example.easynetapp.ui.theme.Screens.login
 
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,6 +32,7 @@ import com.example.easynetapp.R
 import com.example.easynetapp.data.AuthViewModel
 import com.example.easynetapp.navigation.Route_REGISTER
 
+
 @Composable
 fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
@@ -37,6 +40,7 @@ fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
 
     Box(){
@@ -98,18 +102,21 @@ fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            authViewModel.login(email, password) { success, errorMsg ->
+            authViewModel.login(email, password) { success, errorMsg, role ->
                 if (success) {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+                    if (role == "client") {
+                        navController.navigate("client_home") { popUpTo(0) }
+                    } else if (role == "provider") {
+                        navController.navigate("provider_home") { popUpTo(0) }
                     }
                 } else {
-                    error = errorMsg ?: "Login failed"
+                    Toast.makeText(context, errorMsg ?: "Login failed", Toast.LENGTH_LONG).show()
                 }
             }
         }) {
             Text("Login")
         }
+
 
 
 

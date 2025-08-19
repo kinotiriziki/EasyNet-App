@@ -14,7 +14,7 @@ import com.example.easynetapp.data.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun ClientHomeScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {

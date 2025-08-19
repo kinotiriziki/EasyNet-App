@@ -43,6 +43,7 @@ fun RegisterScreen(navController: NavController,authViewModel: AuthViewModel) {
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    var role by remember { mutableStateOf("client") }
 
 
     Box(){
@@ -65,7 +66,7 @@ fun RegisterScreen(navController: NavController,authViewModel: AuthViewModel) {
         Card(shape = CircleShape,
             modifier = Modifier
                 .padding(10.dp)
-                .size(100.dp))
+                .size(75.dp))
         {Image(painter = painterResource(id = R.drawable.logo),
             contentDescription = "Image logo",
             modifier = Modifier
@@ -118,16 +119,38 @@ fun RegisterScreen(navController: NavController,authViewModel: AuthViewModel) {
             visualTransformation = PasswordVisualTransformation()
         )
 
+
+        Row {
+            RadioButton(
+                selected = role == "client",
+                onClick = { role = "client" }
+            )
+            Text("Client")
+
+            Spacer(Modifier.width(16.dp))
+
+            RadioButton(
+                selected = role == "provider",
+                onClick = { role = "provider" }
+            )
+            Text("Provider")
+        }
+
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            authViewModel.register(email, password) { success, errorMsg ->
+            authViewModel.register(fullname,email, password,confirmPassword,role) { success, errorMsg ->
                 if (success) {
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
+                   Toast.makeText(context,"Registration Successful", Toast.LENGTH_LONG).show()
+                    if (role == "client") {
+                        navController.navigate("client_home"){popUpTo(0)}
+                    }else{
+                        navController.navigate("provider_home"){popUpTo(0)}
                     }
+
                 } else {
-                    Toast.makeText(context, errorMsg ?: "Registration failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
                 }
             }
         }) {

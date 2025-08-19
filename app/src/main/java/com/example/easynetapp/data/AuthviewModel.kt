@@ -1,34 +1,93 @@
 package com.example.easynetapp.data
 
 
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import com.example.easynetapp.models.UserModel
+import com.example.easynetapp.navigation.Route_LOGIN
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun login(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
+    fun login(email: String, password: String, onResult: (Boolean, String?, String?) -> Unit) {
+        if (email.isBlank() || password.isBlank()) {
+            onResult(false, "Email and password required", null)
+            return
+        }
+
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult(true, null)
+                    val userId = auth.currentUser?.uid ?: return@addOnCompleteListener
+                    FirebaseDatabase.getInstance().getReference("users")
+                        .child(userId)
+                        .get()
+                        .addOnSuccessListener { snapshot ->
+                            val role = snapshot.child("role").getValue(String::class.java)
+                            onResult(true, null, role)
+                        }
+                        .addOnFailureListener { e ->
+                            onResult(false, e.message, null)
+                        }
                 } else {
-                    onResult(false, task.exception?.message)
+                    onResult(false, task.exception?.message ?: "Login failed", null)
                 }
             }
     }
 
-    fun register(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
+
+    fun register(
+        fullname: String,
+        email: String,
+        password: String,
+        confirmpassword: String,
+        role: String,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        if (fullname.isBlank() || email.isBlank() || password.isBlank() || confirmpassword.isBlank() || role.isBlank()) {
+            onResult(false, "All fields are required")
+            return
+        }
+        if (password != confirmpassword) {
+            onResult(false, "Passwords do not match")
+            return
+        }
+
         auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val userId = auth.currentUser?.uid ?: return@addOnCompleteListener
+                    val user = UserModel(userId, fullname, email, role)
+
+                    saveUserToDatabase(user,onResult)
+
+                } else {
+                    onResult(false, task.exception?.message ?: "Registration failed")
+                }
+            }
+    }
+
+
+    private fun saveUserToDatabase(
+        user: UserModel,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        val dbRef = FirebaseDatabase.getInstance().getReference("users/${user.userId}")
+        dbRef.setValue(user)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     onResult(true, null)
                 } else {
-                    onResult(false, task.exception?.message)
+                    onResult(false, task.exception?.message ?: "Failed to save user")
                 }
             }
     }
+
 
     fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null

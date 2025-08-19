@@ -11,7 +11,8 @@ import com.example.easynetapp.data.AuthViewModel
 import com.example.easynetapp.ui.theme.Screens.login.LoginScreen
 import com.example.easynetapp.ui.theme.Screens.register.RegisterScreen
 import androidx.compose.material3.Text
-import com.example.easynetapp.ui.theme.Screens.home.HomeScreen
+import com.example.easynetapp.ui.theme.Screens.home.ClientHomeScreen
+import com.example.easynetapp.ui.theme.Screens.home.ProviderHomeScreen
 
 
 @Composable
@@ -24,7 +25,8 @@ fun AppNavHost(
     NavHost(navController = navController, startDestination = startDest) {
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("register") { RegisterScreen(navController, authViewModel) }
-        composable("home") { HomeScreen(navController,authViewModel) }
+        composable("client_home") { ClientHomeScreen(navController,authViewModel) }
+        composable("provider_home") { ProviderHomeScreen(navController,authViewModel) }
     }
 }
 
