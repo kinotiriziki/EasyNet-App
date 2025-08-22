@@ -39,7 +39,7 @@ fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
     var password by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var error by remember { mutableStateOf<String?>(null) }
+
     val context = LocalContext.current
 
 
@@ -64,7 +64,7 @@ fun LoginScreen(navController: NavController,authViewModel: AuthViewModel) {
         Card (shape = CircleShape,
             modifier = Modifier
                 .padding(10.dp)
-                .size(75.dp))
+                .size(70.dp))
         { Image(painter = painterResource(id = R.drawable.logo),
             contentDescription = "Image logo",
             modifier = Modifier

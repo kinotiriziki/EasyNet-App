@@ -1,12 +1,7 @@
 package com.example.easynetapp.data
 
-
-import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
 import com.example.easynetapp.models.UserModel
-import com.example.easynetapp.navigation.Route_LOGIN
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -85,6 +80,26 @@ class AuthViewModel : ViewModel() {
                 } else {
                     onResult(false, task.exception?.message ?: "Failed to save user")
                 }
+            }
+    }
+
+    fun getUserRole(onResult: (String?) -> Unit) {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            onResult(null)
+            return
+        }
+
+        FirebaseDatabase.getInstance().getReference("users")
+            .child(userId)
+            .child("role")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val role = snapshot.getValue(String::class.java)
+                onResult(role)
+            }
+            .addOnFailureListener { e ->
+                onResult(null)
             }
     }
 
