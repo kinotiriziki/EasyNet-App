@@ -9,7 +9,11 @@ class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun login(email: String, password: String, onResult: (Boolean, String?, String?) -> Unit) {
+    fun login(
+        email: String,
+        password: String,
+        onResult: (Boolean, String?, String?) -> Unit
+    ) {
         if (email.isBlank() || password.isBlank()) {
             onResult(false, "Email and password required", null)
             return
@@ -18,16 +22,25 @@ class AuthViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val userId = auth.currentUser?.uid ?: return@addOnCompleteListener
-                    FirebaseDatabase.getInstance().getReference("users")
-                        .child(userId)
-                        .get()
-                        .addOnSuccessListener { snapshot ->
-                            val role = snapshot.child("role").getValue(String::class.java)
-                            onResult(true, null, role)
-                        }
-                        .addOnFailureListener { e ->
-                            onResult(false, e.message, null)
+                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+
+
+                    val dbRef = FirebaseDatabase.getInstance().getReference("users")
+
+                    dbRef.child("clients").child(uid).get()
+                        .addOnSuccessListener { clientSnap ->
+                            if (clientSnap.exists()) {
+                                onResult(true, null, "client")
+                            } else {
+                                dbRef.child("providers").child(uid).get()
+                                    .addOnSuccessListener { providerSnap ->
+                                        if (providerSnap.exists()) {
+                                            onResult(true, null, "provider")
+                                        } else {
+                                            onResult(false, "User role not found", null)
+                                        }
+                                    }
+                            }
                         }
                 } else {
                     onResult(false, task.exception?.message ?: "Login failed", null)
@@ -57,7 +70,11 @@ class AuthViewModel : ViewModel() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val userId = auth.currentUser?.uid ?: return@addOnCompleteListener
-                    val user = UserModel(userId, fullname, email, role)
+                    val user = UserModel(
+                        userId= userId,
+                        fullname= fullname,
+                        email = email,
+                        role = role)
 
                     saveUserToDatabase(user,onResult)
 
@@ -72,7 +89,13 @@ class AuthViewModel : ViewModel() {
         user: UserModel,
         onResult: (Boolean, String?) -> Unit
     ) {
-        val dbRef = FirebaseDatabase.getInstance().getReference("users/${user.userId}")
+        val rolePath = if (user.role == "client") "clients" else "providers"
+
+        val dbRef = FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(rolePath)
+            .child(user.userId)
+
         dbRef.setValue(user)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -82,6 +105,7 @@ class AuthViewModel : ViewModel() {
                 }
             }
     }
+
 
     fun getUserRole(onResult: (String?) -> Unit) {
         val userId = auth.currentUser?.uid
@@ -108,9 +132,6 @@ class AuthViewModel : ViewModel() {
         return auth.currentUser != null
     }
 
-    fun logout() {
-        auth.signOut()
-    }
-}
 
+}
 

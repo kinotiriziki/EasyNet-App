@@ -17,15 +17,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.easynetapp.data.ClientViewModel
+import com.example.easynetapp.data.ProviderViewModel
 import com.example.easynetapp.ui.theme.Screens.home.ClientHomeScreen
 import com.example.easynetapp.ui.theme.Screens.home.ProviderHomeScreen
+
 
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     authViewModel: AuthViewModel = viewModel(),
-    clientViewModel : ClientViewModel = viewModel()
+    clientViewModel : ClientViewModel = viewModel(),
+    providerViewModel: ProviderViewModel = viewModel()
 ) {
     val isLoggedIn = authViewModel.isUserLoggedIn()
     var startDest by remember { mutableStateOf("login") }
@@ -45,8 +48,8 @@ fun AppNavHost(
     NavHost(navController = navController, startDestination = startDest) {
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("register") { RegisterScreen(navController, authViewModel) }
-        composable("client_home") { ClientHomeScreen(navController, clientViewModel) }
-        composable("provider_home") { ProviderHomeScreen(navController, clientViewModel) }
+        composable("client_home") { ClientHomeScreen( clientViewModel, navController) }
+        composable("provider_home") { ProviderHomeScreen( providerViewModel, navController) }
     }
 }
 
